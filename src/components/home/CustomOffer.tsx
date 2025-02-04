@@ -4,14 +4,10 @@ import { IndianRupee, Truck, Package, Clock, Send } from 'lucide-react';
 export function CustomOffer() {
   const [message, setMessage] = useState('');
   
-  const scrollToOrder = () => {
-    document.getElementById('order-form')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle the message submission
-    scrollToOrder();
+    // Navigate to custom order page with the message as URL parameter
+    window.location.href = `/custom-order?message=${encodeURIComponent(message)}`;
   };
 
   return (

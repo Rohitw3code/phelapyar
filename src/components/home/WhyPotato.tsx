@@ -63,17 +63,6 @@ export function WhyPotato() {
             </div>
           ))}
         </div>
-
-        {/* Call to action */}
-        <div className="mt-16 text-center animate-fade-in-up animation-delay-800">
-          <a
-            href="#order-form"
-            className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
-          >
-            <Heart className="w-5 h-5" />
-            Send a Potato Message
-          </a>
-        </div>
       </div>
     </section>
   );

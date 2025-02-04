@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ShoppingCart, HelpCircle, Mail, Grid, Heart } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showDatingLink, setShowDatingLink] = useState(false);
+  const { cartCount, toggleCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,43 +17,89 @@ export function Navbar() {
   }, []);
 
   const navItems = [
+    ...(showDatingLink ? [{
+      icon: <Heart className="w-5 h-5 text-pink-400" />,
+      label: 'Find Love',
+      href: 'https://date.phelapyar.com',
+      isExternal: true
+    }] : []),
     { icon: <Grid className="w-5 h-5" />, label: 'Products', href: '#products' },
-    { icon: <ShoppingCart className="w-5 h-5" />, label: 'Cart', href: '#cart' },
+    { 
+      icon: (
+        <div className="relative">
+          <ShoppingCart className="w-5 h-5" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+              {cartCount}
+            </span>
+          )}
+        </div>
+      ), 
+      label: 'Cart', 
+      onClick: toggleCart 
+    },
     { icon: <HelpCircle className="w-5 h-5" />, label: 'FAQ', href: '/faq' },
     { icon: <Mail className="w-5 h-5" />, label: 'Contact', href: '/contact' },
   ];
 
   return (
-    <nav className={`fixed w-full z-50 top-0 transition-all duration-300 ${
-      scrolled ? 'bg-amber-900/95 backdrop-blur-md shadow-lg' : 'bg-amber-900'
-    }`}>
+    <nav 
+      className={`fixed w-full z-50 top-0 transition-all duration-300 ${
+        scrolled 
+          ? 'bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 shadow-lg backdrop-blur-md border-b border-amber-700/50' 
+          : 'bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="group flex items-center space-x-2 text-amber-50">
-            <Heart className="w-8 h-8 transform transition-transform group-hover:rotate-12" />
-            <span className="font-bold text-xl tracking-tight relative">
-              phelapyar.com
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+          <a 
+            href="/" 
+            className="group flex items-center space-x-2 text-amber-50 relative overflow-hidden"
+          >
+            <div className="relative z-10 transform transition-transform group-hover:scale-110 duration-300">
+              <Heart className="w-8 h-8" />
+            </div>
+            <span className="font-bold text-xl tracking-tight relative z-10">
+              <span className="font-serif">phelapyar</span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
             </span>
           </a>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-1">
+          <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="group relative px-4 py-2 rounded-lg text-amber-50 hover:text-amber-200 transition-all duration-300"
-              >
-                <span className="absolute inset-0 bg-amber-800/0 group-hover:bg-amber-800/50 rounded-lg transition-all duration-300"></span>
-                <span className="relative flex items-center space-x-2">
-                  <span className="transform transition-transform group-hover:scale-110 duration-300">
-                    {item.icon}
+              item.onClick ? (
+                <button
+                  key={item.label}
+                  onClick={item.onClick}
+                  className="group relative px-4 py-2 rounded-lg text-amber-100 hover:text-amber-50 transition-all duration-300"
+                >
+                  <span className="absolute inset-0 bg-amber-700/0 group-hover:bg-amber-700/50 rounded-lg transition-all duration-300"></span>
+                  <span className="relative flex items-center space-x-2">
+                    <span className="transform transition-transform group-hover:scale-110 duration-300">
+                      {item.icon}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
                   </span>
-                  <span className="font-medium">{item.label}</span>
-                </span>
-              </a>
+                </button>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target={item.isExternal ? "_blank" : undefined}
+                  rel={item.isExternal ? "noopener noreferrer" : undefined}
+                  className="group relative px-4 py-2 rounded-lg text-amber-100 hover:text-amber-50 transition-all duration-300"
+                >
+                  <span className="absolute inset-0 bg-amber-700/0 group-hover:bg-amber-700/50 rounded-lg transition-all duration-300"></span>
+                  <span className="relative flex items-center space-x-2">
+                    <span className="transform transition-transform group-hover:scale-110 duration-300">
+                      {item.icon}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
+                  </span>
+                </a>
+              )
             ))}
           </div>
 
@@ -58,13 +107,16 @@ export function Navbar() {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-amber-50 hover:text-amber-200 focus:outline-none p-2 rounded-lg hover:bg-amber-800/50 transition-colors duration-300"
+              className="relative text-amber-50 hover:text-amber-200 p-2 rounded-lg hover:bg-amber-700/50 transition-all duration-300"
             >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              <span className="absolute inset-0 bg-amber-700/0 hover:bg-amber-700/50 rounded-lg transition-all duration-300"></span>
+              <span className="relative">
+                {isOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </span>
             </button>
           </div>
         </div>
@@ -77,21 +129,62 @@ export function Navbar() {
         } md:hidden fixed inset-0 z-50 transition-all duration-500 ease-in-out transform`}
         style={{ top: '64px' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-900 to-amber-800 backdrop-blur-lg">
-          <div className="px-4 py-6 space-y-2">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="group flex items-center space-x-3 text-amber-50 hover:text-amber-200 p-3 rounded-xl hover:bg-amber-800/50 transition-all duration-300"
-                onClick={() => setIsOpen(false)}
-              >
-                <span className="transform transition-transform group-hover:scale-110 duration-300">
-                  {item.icon}
-                </span>
-                <span className="font-medium">{item.label}</span>
-              </a>
-            ))}
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        />
+        
+        {/* Menu Panel */}
+        <div className="relative w-3/4 h-full max-w-sm bg-gradient-to-br from-amber-900 via-amber-800 to-amber-900 shadow-2xl">
+          <div className="h-full overflow-y-auto">
+            <div className="px-4 py-6 space-y-2">
+              {navItems.map((item) => (
+                item.onClick ? (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      item.onClick?.();
+                      setIsOpen(false);
+                    }}
+                    className="group flex items-center w-full space-x-3 text-amber-100 hover:text-amber-50 p-3 rounded-xl hover:bg-amber-700/50 active:bg-amber-700/70 transition-all duration-300"
+                  >
+                    <span className="transform transition-transform group-hover:scale-110 duration-300">
+                      {item.icon}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                ) : (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target={item.isExternal ? "_blank" : undefined}
+                    rel={item.isExternal ? "noopener noreferrer" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className="group flex items-center w-full space-x-3 text-amber-100 hover:text-amber-50 p-3 rounded-xl hover:bg-amber-700/50 active:bg-amber-700/70 transition-all duration-300"
+                  >
+                    <span className="transform transition-transform group-hover:scale-110 duration-300">
+                      {item.icon}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
+                  </a>
+                )
+              ))}
+            </div>
+
+            {/* Additional Mobile Menu Content */}
+            <div className="px-4 py-6 border-t border-amber-700/50">
+              <div className="flex flex-col space-y-4">
+                <button className="flex items-center space-x-2 text-amber-200 hover:text-amber-100 transition-colors">
+                  <Heart className="w-5 h-5" />
+                  <span>My Wishlist</span>
+                </button>
+                <button className="flex items-center space-x-2 text-amber-200 hover:text-amber-100 transition-colors">
+                  <Mail className="w-5 h-5" />
+                  <span>Newsletter</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
