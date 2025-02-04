@@ -45,7 +45,7 @@ export function Navbar() {
   return (
     <nav 
       className={`fixed w-full z-50 top-0 transition-all duration-300 ${
-        scrolled 
+        scrolled && !isOpen
           ? 'bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 shadow-lg backdrop-blur-md border-b border-amber-700/50' 
           : 'bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900'
       }`}
@@ -103,8 +103,25 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile Cart and Menu */}
+          <div className="md:hidden flex items-center gap-2">
+            {/* Cart Button */}
+            <button
+              onClick={toggleCart}
+              className="relative text-amber-50 hover:text-amber-200 p-2 rounded-lg hover:bg-amber-700/50 transition-all duration-300"
+            >
+              <span className="absolute inset-0 bg-amber-700/0 hover:bg-amber-700/50 rounded-lg transition-all duration-300"></span>
+              <span className="relative">
+                <ShoppingCart className="h-6 w-6" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                    {cartCount}
+                  </span>
+                )}
+              </span>
+            </button>
+
+            {/* Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="relative text-amber-50 hover:text-amber-200 p-2 rounded-lg hover:bg-amber-700/50 transition-all duration-300"
@@ -127,17 +144,16 @@ export function Navbar() {
         className={`${
           isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
         } md:hidden fixed inset-0 z-50 transition-all duration-500 ease-in-out transform`}
-        style={{ top: '64px' }}
       >
         {/* Backdrop */}
         <div 
-          className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/20"
           onClick={() => setIsOpen(false)}
         />
         
         {/* Menu Panel */}
-        <div className="relative w-3/4 h-full max-w-sm bg-gradient-to-br from-amber-900 via-amber-800 to-amber-900 shadow-2xl">
-          <div className="h-full overflow-y-auto">
+        <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-3/4 max-w-sm bg-gradient-to-br from-amber-900 via-amber-800 to-amber-900 shadow-2xl overflow-auto">
+          <div className="h-full">
             <div className="px-4 py-6 space-y-2">
               {navItems.map((item) => (
                 item.onClick ? (

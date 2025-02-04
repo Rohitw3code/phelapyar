@@ -149,7 +149,6 @@ export function ProductList() {
                     onClick={() => handleBuyNow(product.id)}
                     className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-1.5 px-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 group"
                   >
-                    <Sparkles className="w-3.5 h-3.5 transform group-hover:rotate-12 transition-transform" />
                     Buy Now
                   </button>
                   <button 
