@@ -69,13 +69,23 @@ export function ProductList() {
     }));
   };
 
-  const handleAddToCart = (productId: number) => {
-    addToCart();
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.offPrice,
+      image: product.images[0]
+    });
   };
 
-  const handleBuyNow = (productId: number) => {
-    addToCart();
-    // Additional buy now logic here
+  const handleBuyNow = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.offPrice,
+      image: product.images[0]
+    });
+    window.location.href = '/buy';
   };
 
   return (
@@ -146,13 +156,13 @@ export function ProductList() {
                 {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-1.5">
                   <button 
-                    onClick={() => handleBuyNow(product.id)}
+                    onClick={() => handleBuyNow(product)}
                     className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-1.5 px-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 group"
                   >
                     Buy Now
                   </button>
                   <button 
-                    onClick={() => handleAddToCart(product.id)}
+                    onClick={() => handleAddToCart(product)}
                     className="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium py-1.5 px-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 group"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 transform group-hover:scale-110 transition-transform" />

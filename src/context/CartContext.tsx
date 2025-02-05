@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface CartItem {
   id: number;
@@ -12,7 +12,7 @@ interface CartContextType {
   cartCount: number;
   cartItems: CartItem[];
   isCartOpen: boolean;
-  addToCart: () => void;
+  addToCart: (item: Omit<CartItem, 'quantity'>) => void;
   toggleCart: () => void;
   updateQuantity: (id: number, change: number) => void;
   removeItem: (id: number) => void;
@@ -20,35 +20,51 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartCount, setCartCount] = useState(0);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Classic Message Potato",
-      price: 199,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=250&h=250"
-    },
-    {
-      id: 2,
-      name: "Love Message Pack",
-      price: 299,
-      quantity: 2,
-      image: "https://images.unsplash.com/photo-1590165482129-1b8b27698780?auto=format&fit=crop&w=250&h=250"
-    },
-    {
-      id: 3,
-      name: "Birthday Special",
-      price: 249,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1508313880080-c4bef0730395?auto=format&fit=crop&w=250&h=250"
-    }
-  ]);
+// Default dummy item
+const defaultCartItem: CartItem = {
+  id: 1,
+  name: "Premium Message Potato",
+  price: 199,
+  quantity: 1,
+  image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&q=80&w=400&h=400"
+};
 
-  const addToCart = () => {
-    setCartCount(prev => prev + 1);
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [cartItems, setCartItems] = useState<CartItem[]>([defaultCartItem]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(1);
+
+  // Load cart from localStorage on initial render
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      const parsedCart = JSON.parse(savedCart);
+      // Only use saved cart if it's not empty
+      if (parsedCart.length > 0) {
+        setCartItems(parsedCart);
+        setCartCount(parsedCart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0));
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+    updateCartCount();
+  }, [cartItems]);
+
+  const addToCart = (item: Omit<CartItem, 'quantity'>) => {
+    setCartItems(prev => {
+      const existingItem = prev.find(i => i.id === item.id);
+      if (existingItem) {
+        return prev.map(i => 
+          i.id === item.id 
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        );
+      }
+      return [...prev, { ...item, quantity: 1 }];
+    });
   };
 
   const toggleCart = () => {
@@ -58,17 +74,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = (id: number, change: number) => {
     setCartItems(prev => prev.map(item => {
       if (item.id === id) {
-        const newQuantity = Math.max(0, item.quantity + change);
+        const newQuantity = Math.max(1, item.quantity + change);
         return { ...item, quantity: newQuantity };
       }
       return item;
     }));
-    updateCartCount();
   };
 
   const removeItem = (id: number) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
-    updateCartCount();
   };
 
   const updateCartCount = () => {
