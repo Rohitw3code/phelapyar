@@ -1,92 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IndianRupee, ShoppingCart, Heart, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  offPrice: number;
-  discount: number;
-  images: string[];
-}
+import { getProducts } from '../../api/client';
+import { Product } from '../../types/product';
 
 export function ProductList() {
-  const [activeImageIndex, setActiveImageIndex] = useState<Record<number, number>>({});
+  const [activeImageIndex, setActiveImageIndex] = useState<Record<string, number>>({});
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products: Product[] = [
-    {
-      id: 1,
-      name: "Classic Message Potato",
-      price: 299,
-      offPrice: 199,
-      discount: 33,
-      images: [
-        "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=250&h=250",
-        "https://images.unsplash.com/photo-1552661397-4b89adf8d191?auto=format&fit=crop&w=250&h=250"
-      ]
-    },
-    {
-      id: 2,
-      name: "Love Message Pack",
-      price: 499,
-      offPrice: 299,
-      discount: 40,
-      images: [
-        "https://images.unsplash.com/photo-1590165482129-1b8b27698780?auto=format&fit=crop&w=250&h=250",
-        "https://images.unsplash.com/photo-1633380110125-f6e685676160?auto=format&fit=crop&w=250&h=250"
-      ]
-    },
-    {
-      id: 3,
-      name: "Birthday Special",
-      price: 399,
-      offPrice: 249,
-      discount: 38,
-      images: [
-        "https://images.unsplash.com/photo-1508313880080-c4bef0730395?auto=format&fit=crop&w=250&h=250",
-        "https://images.unsplash.com/photo-1591647598839-c461be026766?auto=format&fit=crop&w=250&h=250"
-      ]
-    },
-    {
-      id: 4,
-      name: "Anniversary Duo",
-      price: 599,
-      offPrice: 399,
-      discount: 33,
-      images: [
-        "https://images.unsplash.com/photo-1591647598839-c461be026766?auto=format&fit=crop&w=250&h=250",
-        "https://images.unsplash.com/photo-1508313880080-c4bef0730395?auto=format&fit=crop&w=250&h=250"
-      ]
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const fetchedProducts = await getProducts();
+      // Filter products with type "1" for featured products
+      const featuredProducts = fetchedProducts.filter(product => product.type === "1");
+      setProducts(featuredProducts);
+    } catch (err) {
+      setError('Failed to load products');
+      console.error('Error loading products:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const nextImage = (productId: number) => {
+  const nextImage = (productId: string) => {
     setActiveImageIndex(prev => ({
       ...prev,
-      [productId]: ((prev[productId] || 0) + 1) % products.find(p => p.id === productId)!.images.length
+      [productId]: ((prev[productId] || 0) + 1) % (products.find(p => p.id === productId)?.images.length || 1)
     }));
   };
 
   const handleAddToCart = (product: Product) => {
     addToCart({
-      id: product.id,
+      id: parseInt(product.id, 36), // Convert string ID to number for cart compatibility
       name: product.name,
-      price: product.offPrice,
+      price: product.price,
       image: product.images[0]
     });
   };
 
   const handleBuyNow = (product: Product) => {
     addToCart({
-      id: product.id,
+      id: parseInt(product.id, 36),
       name: product.name,
-      price: product.offPrice,
+      price: product.price,
       image: product.images[0]
     });
     window.location.href = '/buy';
   };
+
+  if (loading) {
+    return (
+      <div className="py-8 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-amber-100 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-amber-50 rounded-lg h-64"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-8 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-red-600">
+            <p>{error}</p>
+            <button 
+              onClick={fetchProducts}
+              className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-8 bg-white">
@@ -127,10 +130,6 @@ export function ProductList() {
                 >
                   <ArrowRight className="w-3.5 h-3.5 text-amber-600" />
                 </button>
-                {/* Discount Badge */}
-                <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">
-                  {product.discount}% OFF
-                </div>
               </div>
 
               {/* Content */}
@@ -144,10 +143,6 @@ export function ProductList() {
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="flex items-center text-base font-bold text-amber-900">
                       <IndianRupee className="w-3.5 h-3.5" />
-                      {product.offPrice}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 line-through">
-                      <IndianRupee className="w-2.5 h-2.5" />
                       {product.price}
                     </div>
                   </div>
